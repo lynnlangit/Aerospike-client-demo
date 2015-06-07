@@ -107,7 +107,7 @@ public class Program {
 		Bin bin = new Bin("mybin", "myvalue");
 		client.put(writePolicy, key, bin);
 	}
-
+    //Update the IP addresses to the values for your Aerospike instance
 	private static AerospikeClient connect() {
 		Host[] hosts = new Host[] { new Host("192.168.1.114", 3000),
 				new Host("192.168.1.19", 3000) };
