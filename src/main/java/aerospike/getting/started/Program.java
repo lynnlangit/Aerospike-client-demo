@@ -11,12 +11,20 @@ import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 
 public class Program {
+	
+	//Update the IP addresses to the values for your Aerospike instance
+	private static AerospikeClient connect() {
+		Host[] hosts = new Host[] { new Host("192.168.1.114", 3000),
+				new Host("127.0.0.1", 3000) };
+		AerospikeClient client = new AerospikeClient(new ClientPolicy(), hosts);
+		return client;
+	}
+	
 	public static void main(String[] args) {
-		// Connecting
+		
 		AerospikeClient client = connect();
-
-		// Writing
 		WritePolicy writePolicy = new WritePolicy();
+		
 		//NOTE: you may want to adjust the timeout value depending on your demo machine 
 		writePolicy.timeout = 1000;
 		Key key = new Key("test", "myset", "mykey");
@@ -26,24 +34,54 @@ public class Program {
 		deleteBin(client, writePolicy, key);
 		ttl(client);
 
-		// Reading
 		Policy policy = new Policy();
 		readKey(client, policy, key);
 		readBins(client, policy, key);
 		checkExists(client, policy, key);
 
-		// Delete
 		deleteRecord(client, writePolicy, key);
 
-		// Batch Reads
 		addRecords(client, writePolicy);
 		batchReads(client, policy);
 
-		// Multiple Ops
 		multiOps(client, writePolicy, key);
 
-		// Close
 		client.close();
+	}
+
+	private static void addRecords(AerospikeClient client,
+			WritePolicy writePolicy) {
+		int size = 1024;
+		for (int i = 0; i < size; i++) {
+			Key key = new Key("test", "myset", (i + 1));
+			client.put(writePolicy, key, new Bin("dots", i + " dots"));
+		}
+	}
+	
+	private static void writeSingleValue(AerospikeClient client,
+			WritePolicy writePolicy, Key key) {
+		Bin bin = new Bin("mybin", "myvalue");
+		client.put(writePolicy, key, bin);
+	}
+	
+	private static void writeMultipleValues(AerospikeClient client,
+			WritePolicy writePolicy, Key key) {
+		Bin bin2 = new Bin("age", 42);
+		Bin bin1 = new Bin("name", "Lynn");
+		client.put(writePolicy, key, bin1, bin2);
+	}
+	
+	private static void deleteRecord(AerospikeClient client,
+			WritePolicy policy, Key key) {
+		System.out.println("Delete a Record");
+		client.delete(policy, key);
+		checkExists(client, policy, key);
+	}
+	
+	private static void deleteBin(AerospikeClient client,
+			WritePolicy writePolicy, Key key) {
+		Bin bin1 = Bin.asNull("mybin");
+		client.put(writePolicy, key, bin1);
 	}
 
 	private static void multiOps(AerospikeClient client,
@@ -58,23 +96,13 @@ public class Program {
 				Operation.put(bin4), Operation.get());
 		System.out.println("Record: " + record);
 	}
-
-	private static void addRecords(AerospikeClient client,
-			WritePolicy writePolicy) {
-		int size = 1024;
-		for (int i = 0; i < size; i++) {
-			Key key = new Key("test", "myset", (i + 1));
-			client.put(writePolicy, key, new Bin("dots", i + " dots"));
-		}
-
-	}
-
+	
 	private static void ttl(AerospikeClient client) {
 		WritePolicy writePolicy = new WritePolicy();
 		writePolicy.expiration = 2;
 
 		Key key = new Key("test", "myset", "mykey2");
-		Bin bin = new Bin("gender", "male");
+		Bin bin = new Bin("gender", "female");
 		client.put(writePolicy, key, bin);
 
 		Policy policy = new Policy();
@@ -89,32 +117,6 @@ public class Program {
 
 	}
 
-	private static void deleteBin(AerospikeClient client,
-			WritePolicy writePolicy, Key key) {
-		Bin bin1 = Bin.asNull("mybin");
-		client.put(writePolicy, key, bin1);
-	}
-
-	private static void writeMultipleValues(AerospikeClient client,
-			WritePolicy writePolicy, Key key) {
-		Bin bin2 = new Bin("age", 25);
-		Bin bin1 = new Bin("name", "John");
-		client.put(writePolicy, key, bin1, bin2);
-	}
-
-	private static void writeSingleValue(AerospikeClient client,
-			WritePolicy writePolicy, Key key) {
-		Bin bin = new Bin("mybin", "myvalue");
-		client.put(writePolicy, key, bin);
-	}
-    //Update the IP addresses to the values for your Aerospike instance
-	private static AerospikeClient connect() {
-		Host[] hosts = new Host[] { new Host("192.168.1.114", 3000),
-				new Host("192.168.1.19", 3000) };
-		AerospikeClient client = new AerospikeClient(new ClientPolicy(), hosts);
-		return client;
-	}
-
 	private static void batchReads(AerospikeClient client, Policy policy) {
 		System.out.println("Batch Reads");
 		int size = 1024;
@@ -126,14 +128,6 @@ public class Program {
 		for (int i = 0; i < records.length; i++) {
 			System.out.println("Record[" + i + "]: " + records[i]);
 		}
-
-	}
-
-	private static void deleteRecord(AerospikeClient client,
-			WritePolicy policy, Key key) {
-		System.out.println("Delete a Record");
-		client.delete(policy, key);
-		checkExists(client, policy, key);
 	}
 
 	private static void checkExists(AerospikeClient client, Policy policy,
