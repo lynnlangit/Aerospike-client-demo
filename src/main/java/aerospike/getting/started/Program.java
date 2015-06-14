@@ -13,7 +13,7 @@ import com.aerospike.client.policy.WritePolicy;
 
 public class Program {
 	
-	//Update the IP addresses to the values for your Aerospike instance
+	//Update the IP addresses to the values for YOUR Aerospike instance
 	private static AerospikeClient connect() {
 		Host[] hosts = new Host[] { new Host("192.168.1.114", 3000),
 				new Host("127.0.0.1", 3000) };
@@ -25,6 +25,7 @@ public class Program {
 		
 		AerospikeClient client = connect();
 		WritePolicy writePolicy = new WritePolicy();
+		Policy policy = new Policy();
 		BatchPolicy batchPolicy = new BatchPolicy();
 		
 		//NOTE: you may want to adjust the timeout value depending on your demo machine 
@@ -36,7 +37,6 @@ public class Program {
 		deleteBin(client, writePolicy, key);
 		ttl(client);
 
-		Policy policy = new Policy();
 		readKey(client, policy, key);
 		readBins(client, policy, key);
 		checkExists(client, policy, key);
@@ -47,17 +47,8 @@ public class Program {
 		batchReads(client, batchPolicy);
 
 		multiOps(client, writePolicy, key);
-
+		
 		client.close();
-	}
-
-	private static void addRecords(AerospikeClient client,
-			WritePolicy writePolicy) {
-		int size = 1024;
-		for (int i = 0; i < size; i++) {
-			Key key = new Key("test", "myset", (i + 1));
-			client.put(writePolicy, key, new Bin("dots", i + " dots"));
-		}
 	}
 	
 	private static void writeSingleValue(AerospikeClient client,
@@ -72,31 +63,11 @@ public class Program {
 		Bin bin1 = new Bin("name", "Lynn");
 		client.put(writePolicy, key, bin1, bin2);
 	}
-	
-	private static void deleteRecord(AerospikeClient client,
-			WritePolicy policy, Key key) {
-		System.out.println("Delete a Record");
-		client.delete(policy, key);
-		checkExists(client, policy, key);
-	}
-	
+
 	private static void deleteBin(AerospikeClient client,
 			WritePolicy writePolicy, Key key) {
 		Bin bin1 = Bin.asNull("mybin");
 		client.put(writePolicy, key, bin1);
-	}
-
-	private static void multiOps(AerospikeClient client,
-			WritePolicy writePolicy, Key key) {
-		System.out.println("Multiops");
-		Bin bin1 = new Bin("optintbin", 7);
-		Bin bin2 = new Bin("optstringbin", "string value");
-		client.put(writePolicy, key, bin1, bin2);
-		Bin bin3 = new Bin(bin1.name, 4);
-		Bin bin4 = new Bin(bin2.name, "new string");
-		Record record = client.operate(writePolicy, key, Operation.add(bin3),
-				Operation.put(bin4), Operation.get());
-		System.out.println("Record: " + record);
 	}
 	
 	private static void ttl(AerospikeClient client) {
@@ -118,7 +89,42 @@ public class Program {
 		checkExists(client, policy, key);
 
 	}
+	
+	private static void readKey(AerospikeClient client, Policy policy, Key key) {
+		System.out.println("Read all bins of a record");
+		Record record = client.get(policy, key);
+		System.out.println("Record: " + record);
+	}
 
+	private static void readBins(AerospikeClient client, Policy policy, Key key) {
+		System.out.println("Read specific bins of a record");
+		Record record = client.get(policy, key, "name");
+		System.out.println("Record: " + record);
+	}
+	
+	private static void checkExists(AerospikeClient client, Policy policy,
+			Key key) {
+		System.out.println("Check a record exists");
+		boolean exists = client.exists(policy, key);
+		System.out.println(key + " exists? " + exists);
+	}
+	
+	private static void deleteRecord(AerospikeClient client,
+			WritePolicy policy, Key key) {
+		System.out.println("Delete a Record");
+		client.delete(policy, key);
+		checkExists(client, policy, key);
+	}
+	
+	private static void addRecords(AerospikeClient client,
+			WritePolicy writePolicy) {
+		int size = 1024;
+		for (int i = 0; i < size; i++) {
+			Key key = new Key("test", "myset", (i + 1));
+			client.put(writePolicy, key, new Bin("dots", i + " dots"));
+		}
+	}
+	
 	private static void batchReads(AerospikeClient client, BatchPolicy batchPolicy) {
 		System.out.println("Batch Reads");
 		int size = 1024;
@@ -132,22 +138,17 @@ public class Program {
 		}
 	}
 
-	private static void checkExists(AerospikeClient client, Policy policy,
-			Key key) {
-		System.out.println("Check a record exists");
-		boolean exists = client.exists(policy, key);
-		System.out.println(key + " exists? " + exists);
-	}
-
-	private static void readKey(AerospikeClient client, Policy policy, Key key) {
-		System.out.println("Read all bins of a record");
-		Record record = client.get(policy, key);
+	private static void multiOps(AerospikeClient client,
+			WritePolicy writePolicy, Key key) {
+		System.out.println("Multiops");
+		Bin bin1 = new Bin("optintbin", 7);
+		Bin bin2 = new Bin("optstringbin", "string value");
+		client.put(writePolicy, key, bin1, bin2);
+		Bin bin3 = new Bin(bin1.name, 4);
+		Bin bin4 = new Bin(bin2.name, "new string");
+		Record record = client.operate(writePolicy, key, Operation.add(bin3),
+				Operation.put(bin4), Operation.get());
 		System.out.println("Record: " + record);
 	}
 
-	private static void readBins(AerospikeClient client, Policy policy, Key key) {
-		System.out.println("Read specific bins of a record");
-		Record record = client.get(policy, key, "name");
-		System.out.println("Record: " + record);
-	}
 }
