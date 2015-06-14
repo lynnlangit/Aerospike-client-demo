@@ -6,6 +6,7 @@ import com.aerospike.client.Host;
 import com.aerospike.client.Key;
 import com.aerospike.client.Operation;
 import com.aerospike.client.Record;
+import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
@@ -24,6 +25,7 @@ public class Program {
 		
 		AerospikeClient client = connect();
 		WritePolicy writePolicy = new WritePolicy();
+		BatchPolicy batchPolicy = new BatchPolicy();
 		
 		//NOTE: you may want to adjust the timeout value depending on your demo machine 
 		writePolicy.timeout = 1000;
@@ -42,7 +44,7 @@ public class Program {
 		deleteRecord(client, writePolicy, key);
 
 		addRecords(client, writePolicy);
-		batchReads(client, policy);
+		batchReads(client, batchPolicy);
 
 		multiOps(client, writePolicy, key);
 
@@ -117,14 +119,14 @@ public class Program {
 
 	}
 
-	private static void batchReads(AerospikeClient client, Policy policy) {
+	private static void batchReads(AerospikeClient client, BatchPolicy batchPolicy) {
 		System.out.println("Batch Reads");
 		int size = 1024;
 		Key[] keys = new Key[size];
 		for (int i = 0; i < keys.length; i++) {
 			keys[i] = new Key("test", "myset", (i + 1));
 		}
-		Record[] records = client.get(policy, keys);
+		Record[] records = client.get(batchPolicy, keys);
 		for (int i = 0; i < records.length; i++) {
 			System.out.println("Record[" + i + "]: " + records[i]);
 		}
