@@ -33,12 +33,13 @@ public class Program {
 		Key key = new Key("test", "myset", "mykey");
 
 		writeSingleValue(client, writePolicy, key);
+		addSingleValue(client, writePolicy, key);
 		writeMultipleValues(client, writePolicy, key);
 		deleteBin(client, writePolicy, key);
 		ttl(client);
 
-		readKey(client, policy, key);
-		readBins(client, policy, key);
+		readAllBinsForKey(client, policy, key);
+		readSomeBinsForKey(client, policy, key);
 		checkExists(client, policy, key);
 
 		deleteRecord(client, writePolicy, key);
@@ -53,8 +54,17 @@ public class Program {
 	
 	private static void writeSingleValue(AerospikeClient client,
 			WritePolicy writePolicy, Key key) {
-		Bin bin = new Bin("mybin", "myvalue");
+		Bin bin = new Bin("mybin", "myReadModifyWriteValue");
 		client.put(writePolicy, key, bin);
+		System.out.println("Wrote this new value: "+ key);
+	}
+	
+	private static void addSingleValue(AerospikeClient client,
+			WritePolicy writePolicy, Key key) {
+		Key newKey = new Key("test","myAddSet","myAddKey");
+		Bin counter = new Bin("mybin", 1);
+		client.add(writePolicy, newKey, counter);
+		System.out.println("Wrote this additional value:  "+ key);
 	}
 	
 	private static void writeMultipleValues(AerospikeClient client,
@@ -63,12 +73,15 @@ public class Program {
 		Bin bin1 = new Bin("name", "Lynn");
 		Bin bin2 = new Bin("age", 42);
 		client.put(writePolicy, key, bin0, bin1, bin2);
+		System.out.println("Wrote these additional values:  "+ key 
+				+ " " + bin0 + " "+ bin1 + " " + bin2);
 	}
 
 	private static void deleteBin(AerospikeClient client,
 			WritePolicy writePolicy, Key key) {
 		Bin bin1 = Bin.asNull("mybin");
 		client.put(writePolicy, key, bin1);
+		System.out.println("Deleted this value:  "+ key);
 	}
 	
 	private static void ttl(AerospikeClient client) {
@@ -91,16 +104,16 @@ public class Program {
 
 	}
 	
-	private static void readKey(AerospikeClient client, Policy policy, Key key) {
+	private static void readAllBinsForKey(AerospikeClient client, Policy policy, Key key) {
 		System.out.println("Read all bins of a record");
 		Record record = client.get(policy, key);
-		System.out.println("Record: " + record);
+		System.out.println("Read these bins: " + record);
 	}
 
-	private static void readBins(AerospikeClient client, Policy policy, Key key) {
+	private static void readSomeBinsForKey(AerospikeClient client, Policy policy, Key key) {
 		System.out.println("Read specific bins of a record");
-		Record record = client.get(policy, key, "name");
-		System.out.println("Record: " + record);
+		Record record = client.get(policy, key, "name","age");
+		System.out.println("Read these bins: " + record);
 	}
 	
 	private static void checkExists(AerospikeClient client, Policy policy,
