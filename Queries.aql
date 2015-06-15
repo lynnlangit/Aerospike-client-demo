@@ -1,0 +1,42 @@
+//ascli sample
+
+	SSH into the Vagrant instance
+
+	type ascli at the SSH prompt
+
+		ascli put test test test '{"a": "A", "b": 1, "c": [1,2,3], "d": {"x": 4}}'
+
+		ascli get test test test
+
+		ascli exists test test test
+
+		ascli remove test test test
+
+		ascli query-list
+
+//aql sample
+
+	type 'aql'  to start the aql session
+
+		SHOW NAMESPACES
+
+		SHOW SETS
+
+		SHOW BINS
+
+		EXIT
+
+			**drop back into 'ascli' to **put** the record again
+
+				type ascli at the SSH prompt
+
+					ascli put test test test '{"a": "A", "b": 1, "c": [1,2,3], "d": {"x": 4}}'
+
+			**go back into 'aql'
+
+		SELECT d FROM test.test
+
+		SELECT d,a FROM test.test
+
+		EXIT
+
