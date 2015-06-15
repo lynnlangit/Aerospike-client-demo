@@ -24,11 +24,11 @@ public class Program {
 	public static void main(String[] args) {
 		
 		AerospikeClient client = connect();
-		WritePolicy writePolicy = new WritePolicy();
 		Policy policy = new Policy();
+		WritePolicy writePolicy = new WritePolicy();
 		BatchPolicy batchPolicy = new BatchPolicy();
 		
-		//NOTE: you may want to adjust the timeout value depending on your demo machine 
+		//NOTE: adjust the timeout value depending on your demo machine 
 		writePolicy.timeout = 1000;
 		Key key = new Key("test", "myset", "mykey");
 
@@ -59,9 +59,10 @@ public class Program {
 	
 	private static void writeMultipleValues(AerospikeClient client,
 			WritePolicy writePolicy, Key key) {
-		Bin bin2 = new Bin("age", 42);
+		Bin bin0 = new Bin("location","Oslo");
 		Bin bin1 = new Bin("name", "Lynn");
-		client.put(writePolicy, key, bin1, bin2);
+		Bin bin2 = new Bin("age", 42);
+		client.put(writePolicy, key, bin0, bin1, bin2);
 	}
 
 	private static void deleteBin(AerospikeClient client,
