@@ -64,7 +64,7 @@ public class Program {
 		Key newKey = new Key("test","myAddSet","myAddKey");
 		Bin counter = new Bin("mybin", 1);
 		client.add(writePolicy, newKey, counter);
-		System.out.println("Wrote this additional value:  "+ key);
+		System.out.println("Wrote this additional value:  "+ newKey);
 	}
 	
 	private static void writeMultipleValues(AerospikeClient client,
@@ -76,22 +76,14 @@ public class Program {
 		System.out.println("Wrote these additional values:  "+ key 
 				+ " " + bin0 + " "+ bin1 + " " + bin2);
 	}
-
-	private static void deleteBin(AerospikeClient client,
-			WritePolicy writePolicy, Key key) {
-		Bin bin1 = Bin.asNull("mybin");
-		client.put(writePolicy, key, bin1);
-		System.out.println("Deleted this value:  "+ key);
-	}
-	
 	private static void ttl(AerospikeClient client) {
 		WritePolicy writePolicy = new WritePolicy();
 		writePolicy.expiration = 2;
-
+		
 		Key key = new Key("test", "myset", "mykey2");
 		Bin bin = new Bin("gender", "female");
 		client.put(writePolicy, key, bin);
-
+		
 		Policy policy = new Policy();
 		checkExists(client, policy, key);
 		System.out.println("sleeping for 4 seconds");
@@ -101,8 +93,23 @@ public class Program {
 			e.printStackTrace();
 		}
 		checkExists(client, policy, key);
-
+		
 	}
+
+	private static void checkExists(AerospikeClient client, Policy policy,
+			Key key) {
+		System.out.println("Check a record exists");
+		boolean exists = client.exists(policy, key);
+		System.out.println(key + " exists? " + exists);
+	}
+	private static void deleteBin(AerospikeClient client,
+			WritePolicy writePolicy, Key key) {
+		Bin bin1 = Bin.asNull("mybin");
+		client.put(writePolicy, key, bin1);
+		System.out.println("Deleted this value:  "+ key);
+	}
+	
+	
 	
 	private static void readAllBinsForKey(AerospikeClient client, Policy policy, Key key) {
 		System.out.println("Read all bins of a record");
@@ -116,12 +123,6 @@ public class Program {
 		System.out.println("Read these bins: " + record);
 	}
 	
-	private static void checkExists(AerospikeClient client, Policy policy,
-			Key key) {
-		System.out.println("Check a record exists");
-		boolean exists = client.exists(policy, key);
-		System.out.println(key + " exists? " + exists);
-	}
 	
 	private static void deleteRecord(AerospikeClient client,
 			WritePolicy policy, Key key) {
