@@ -115,7 +115,6 @@ public class Program {
 		System.out.println("");
 	}
 	
-
 	private static void readSomeValuesForKey(AerospikeClient client, Policy policy, Key key) {
 		System.out.println("Read specific values (or bins) of a record");
 		Record record = client.get(policy, key, "name","age");
