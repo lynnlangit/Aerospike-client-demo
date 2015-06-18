@@ -6,10 +6,10 @@ import com.aerospike.client.Host;
 import com.aerospike.client.Key;
 import com.aerospike.client.Operation;
 import com.aerospike.client.Record;
-import com.aerospike.client.policy.BatchPolicy;
-import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
+import com.aerospike.client.policy.BatchPolicy;
+import com.aerospike.client.policy.ClientPolicy;
 
 public class Program {
 	
@@ -33,12 +33,12 @@ public class Program {
 		Key key = new Key("test", "myset", "mykey");
 
 		writeSingleValue(client, writePolicy, key);
+		checkKeyExists(client, policy, key);
 		addSingleValue(client, writePolicy, key);
 		writeMultipleValues(client, writePolicy, key);
 		writeValueWithTTL(client);
 
 		readAllValuesForKey(client, policy, key);
-		checkKeyExists(client, policy, key);
 		readSomeValuesForKey(client, policy, key);
 
 		deleteValue(client, writePolicy, key);
@@ -57,6 +57,15 @@ public class Program {
 		Bin bin = new Bin("mybin", "myReadModifyWriteValue");
 		client.put(writePolicy, key, bin);
 		System.out.println("Wrote this new value (or bin): "+ key);
+		System.out.println("");
+	}
+	
+	private static void checkKeyExists(AerospikeClient client, Policy policy,
+			Key key) {
+		System.out.println("Check a record exists");
+		boolean exists = client.exists(policy, key);
+		System.out.println(key + " exists? " + exists);
+		System.out.println("");
 	}
 	
 	private static void addSingleValue(AerospikeClient client,
@@ -65,6 +74,7 @@ public class Program {
 		Bin counter = new Bin("mybin", 1);
 		client.add(writePolicy, newKey, counter);
 		System.out.println("Wrote this additional value (or bin):  "+ newKey);
+		System.out.println("");
 	}
 	
 	private static void writeMultipleValues(AerospikeClient client,
@@ -75,44 +85,42 @@ public class Program {
 		client.put(writePolicy, key, bin0, bin1, bin2);
 		System.out.println("Wrote these additional values:  "+ key 
 				+ " " + bin0 + " "+ bin1 + " " + bin2);
+		System.out.println("");
 	}
 	
 	private static void writeValueWithTTL(AerospikeClient client) {
 		WritePolicy writePolicy = new WritePolicy();
 		writePolicy.expiration = 2;
 		
-		Key key = new Key("test", "myset", "mykey2");
+		Key ttlKey = new Key("test", "myTtlSet", "myTtlKey");
 		Bin bin = new Bin("gender", "female");
-		client.put(writePolicy, key, bin);
+		client.put(writePolicy, ttlKey, bin);
 		
 		Policy policy = new Policy();
-		checkKeyExists(client, policy, key);
+		checkKeyExists(client, policy, ttlKey);
 		System.out.println("sleeping for 4 seconds");
 		try {
 			Thread.sleep(4000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		checkKeyExists(client, policy, key);
+		checkKeyExists(client, policy, ttlKey);
+		System.out.println("");
 	}
 	
 	private static void readAllValuesForKey(AerospikeClient client, Policy policy, Key key) {
 		System.out.println("Read all bins of a record");
 		Record record = client.get(policy, key);
 		System.out.println("Read these values: " + record);
+		System.out.println("");
 	}
 	
-	private static void checkKeyExists(AerospikeClient client, Policy policy,
-			Key key) {
-		System.out.println("Check a record exists");
-		boolean exists = client.exists(policy, key);
-		System.out.println(key + " exists? " + exists);
-	}
 
 	private static void readSomeValuesForKey(AerospikeClient client, Policy policy, Key key) {
 		System.out.println("Read specific values (or bins) of a record");
 		Record record = client.get(policy, key, "name","age");
 		System.out.println("Read these values: " + record);
+		System.out.println("");
 	}
 	
 	private static void deleteValue(AerospikeClient client,
@@ -120,6 +128,7 @@ public class Program {
 		Bin bin1 = Bin.asNull("mybin");
 		client.put(writePolicy, key, bin1);
 		System.out.println("Deleted this value:  "+ bin1);
+		System.out.println("");
 	}
 	
 	private static void deleteRecord(AerospikeClient client,
@@ -127,6 +136,7 @@ public class Program {
 		client.delete(policy, key);
 		checkKeyExists(client, policy, key);
 		System.out.println("Deleted this record: " + key);
+		System.out.println("");
 	}
 	
 	private static void addRecords(AerospikeClient client,
@@ -137,6 +147,7 @@ public class Program {
 			client.put(writePolicy, key, new Bin("dots", i + " dots"));
 		}
 		System.out.println("Added " + size + " Records");
+		System.out.println("");
 	}
 	
 	private static void batchReadRecords(AerospikeClient client, BatchPolicy batchPolicy) {
@@ -150,6 +161,7 @@ public class Program {
 		for (int i = 0; i < records.length; i++) {
 			System.out.println("Record[" + i + "]: " + records[i]);
 		}
+		System.out.println("");
 	}
 
 	private static void multiOps(AerospikeClient client,
