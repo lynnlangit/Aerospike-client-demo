@@ -158,10 +158,7 @@ public class Program {
 			keys[i] = new Key("test", "myset", (i + 1));
 		}
 		Record[] records = client.get(batchPolicy, keys);
-		for (int i = 0; i < records.length; i++) {
-			System.out.println("Record[" + i + "]: " + records[i]);
-		}
-		System.out.println("");
+		System.out.println("Read " + records.length + " records");
 	}
 
 	private static void multiOps(AerospikeClient client,
