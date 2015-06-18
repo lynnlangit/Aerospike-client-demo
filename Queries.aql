@@ -2,7 +2,7 @@
 
 	SSH into the Vagrant instance
 
-	type ascli at the SSH prompt
+	type ascli --help at the SSH prompt
 
 		ascli put test test test '{"a": "A", "b": 1, "c": [1,2,3], "d": {"x": 4}}'
 
