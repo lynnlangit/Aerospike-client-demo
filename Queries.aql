@@ -12,8 +12,6 @@
 
 		ascli remove test test test
 
-		ascli query-list
-
 //aql sample
 
 	type 'aql'  to start the aql session
